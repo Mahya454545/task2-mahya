@@ -23,24 +23,6 @@ This application serves as a realistic simulation of a forex CRM interface, feat
 
 ---
 
-## Pages & Routes
-
-The dashboard includes the following main sections, accessible via hash-based routing:
-
-| Route          | Page              | Description                                        |
-| :------------- | :---------------- | :------------------------------------------------- |
-| `#home`        | Home              | Quick overview and navigation to all data sections |
-| `#dashboard`   | Dashboard         | Key Performance Indicators (KPIs), revenue trends, and client segmentation |
-| `#sales`       | Sales Analytics   | Detailed insights into revenue over time, account types, and purchase plans |
-| `#clients`     | Clients           | Searchable and filterable table of client data     |
-| `#geography`   | Geography         | Global client distribution and regional revenue analysis |
-| `#tickets`     | Tickets           | Management and analysis of support ticket categories, pipeline, and live feed |
-| `#agents`      | Agents            | Agent workload, response times, and performance metrics |
-| `#marketing`   | Marketing         | Analysis of UTM sources, traffic channels, and campaign statistics |
-| `#reports`     | Reports           | Summary of KPIs against targets and exportable reports |
-
----
-
 ## Data Structure
 
 The dashboard operates using a simulated client dataset (`client_data_fake.csv`), providing comprehensive data for demonstration purposes. The schema includes:
