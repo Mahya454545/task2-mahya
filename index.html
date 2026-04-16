@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>forfx — Sales & Support Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* =============================================
+   MATERIAL DESIGN 3 — DESIGN TOKENS
+============================================= */
+:root {
+  /* MD3 Purple Palette */
+  --md-primary: #6750A4;
+  --md-on-primary: #FFFFFF;
+  --md-primary-container: #EADDFF;
+  --md-on-primary-container: #21005D;
+  --md-secondary: #625B71;
+  --md-on-secondary: #FFFFFF;
+  --md-secondary-container: #E8DEF8;
+  --md-on-secondary-container: #1D192B;
+  --md-tertiary: #7D5260;
+  --md-on-tertiary: #FFFFFF;
+  --md-tertiary-container: #FFD8E4;
+  --md-error: #B3261E;
+  --md-error-container: #F9DEDC;
+  --md-on-error-container: #410E0B;
+
+  /* Surfaces */
+  --md-surface: #FFFBFE;
+  --md-surface-variant: #E7E0EC;
+  --md-on-surface: #1C1B1F;
+  --md-on-surface-variant: #49454F;
+  --md-outline: #79747E;
+  --md-outline-variant: #CAC4D0;
+  --md-background: #FFFBFE;
+  --md-on-background: #1C1B1F;
+  --md-inverse-surface: #313033;
+  --md-inverse-on-surface: #F4EFF4;
+
+  /* Tonal Surfaces (MD3 elevation via tint) */
+  --surface-1: #F4EFFE;
+  --surface-2: #EDE8F5;
+  --surface-3: #E6E0EF;
+  --surface-container: #F3EDF7;
+  --surface-container-high: #ECE6F0;
+  --surface-container-highest: #E6E0E9;
+
+  /* Typography */
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Shape */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+  --radius-full: 50px;
+
+  /* Elevation Shadows */
+  --elev-1: 0 1px 2px rgba(0,0,0,.1), 0 1px 3px 1px rgba(0,0,0,.07);
+  --elev-2: 0 1px 2px rgba(0,0,0,.1), 0 2px 6px 2px rgba(0,0,0,.07);
+  --elev-3: 0 4px 8px 3px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.1);
+
+  --sidebar-w: 256px;
+  --header-h: 64px;
+}
+
+/* =============================================
+   DARK MODE TOKENS
+============================================= */
+[data-theme="dark"] {
+  --md-primary: #D0BCFF;
+  --md-on-primary: #381E72;
+  --md-primary-container: #4F378B;
+  --md-on-primary-container: #EADDFF;
+  --md-secondary: #CCC2DC;
+  --md-on-secondary: #332D41;
+  --md-secondary-container: #4A4458;
+  --md-on-secondary-container: #E8DEF8;
+  --md-tertiary: #EFB8C8;
+  --md-on-tertiary: #492532;
+  --md-error: #F2B8B5;
+  --md-error-container: #8C1D18;
+  --md-on-error-container: #F9DEDC;
+
+  --md-surface: #1C1B1F;
+  --md-surface-variant: #49454F;
+  --md-on-surface: #E6E1E5;
+  --md-on-surface-variant: #CAC4D0;
+  --md-outline: #938F99;
+  --md-outline-variant: #49454F;
+  --md-background: #1C1B1F;
+  --md-on-background: #E6E1E5;
+  --md-inverse-surface: #E6E1E5;
+  --md-inverse-on-surface: #313033;
+
+  --surface-1: #25232A;
+  --surface-2: #2B2930;
+  --surface-3: #302D38;
+  --surface-container: #211F26;
+  --surface-container-high: #2B2930;
+  --surface-container-highest: #36343B;
+}
+
+/* =============================================
+   RESET & BASE
+============================================= */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--font);
+  background: var(--md-background);
+  color: var(--md-on-background);
+  display: flex;
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+}
+
+/* =============================================
+   NAVIGATION DRAWER (MD3 Sidebar)
+============================================= */
+.nav-drawer {
+  width: var(--sidebar-w);
+  background: var(--surface-container);
+  height: 100vh;
+  position: fixed;
+  top: 0; left: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: transform .3s cubic-bezier(.2,0,0,1), background .3s;
+  border-right: 1px solid var(--md-outline-variant);
+}
+
+.drawer-header {
+  padding: 20px 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.drawer-logo {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--md-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; color: var(--md-on-primary);
+  flex-shrink: 0;
+  box-shadow: var(--elev-2);
+}
+.drawer-brand { line-height: 1.2; }
+.drawer-brand .name {
+  font-size: 18px; font-weight: 800;
+  color: var(--md-primary); letter-spacing: .5px;
+}
+.drawer-brand .tagline {
+  font-size: 10.5px;
+  color: var(--md-on-surface-variant);
+  font-weight: 500;
+}
+
+.drawer-divider {
+  height: 1px;
+  background: var(--md-outline-variant);
+  margin: 8px 16px;
+}
+
+.nav-section-label {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--md-on-surface-variant);
+  padding: 12px 16px 4px;
+}
+
+/* MD3 Navigation Destination */
+.nav-item {
+  display: flex; align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 48px;
+  margin: 2px 12px;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  font-size: 13.5px; font-weight: 500;
+  color: var(--md-on-surface-variant);
+  text-decoration: none;
+  position: relative;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+.nav-item::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: var(--md-primary);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.nav-item:hover::before { opacity: 0.08; }
+.nav-item:hover { color: var(--md-on-surface); }
+.nav-item.active {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  font-weight: 700;
+}
+.nav-item.active::before { display: none; }
+.nav-icon { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+.nav-label { flex: 1; }
+.nav-badge {
+  background: var(--md-error);
+  color: var(--md-on-primary);
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  min-width: 20px; text-align: center;
+}
+
+.drawer-user {
+  margin-top: auto;
+  padding: 12px 16px;
+  border-top: 1px solid var(--md-outline-variant);
+  display: flex; align-items: center; gap: 10px;
+}
+.user-av {
+  width: 40px; height: 40px; border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--md-primary), #A855F7);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0;
+  box-shadow: var(--elev-1);
+}
+.user-info .u-name { font-size: 13px; font-weight: 600; color: var(--md-on-surface); }
+.user-info .u-role { font-size: 11px; color: var(--md-on-surface-variant); }
+
+/* =============================================
+   MAIN AREA
+============================================= */
+.main-area {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin .3s;
+}
+
+/* =============================================
+   TOP APP BAR (MD3)
+============================================= */
+.top-bar {
+  height: var(--header-h);
+  background: var(--surface-container);
+  border-bottom: 1px solid var(--md-outline-variant);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky; top: 0; z-index: 100;
+  transition: background .3s;
+  box-shadow: var(--elev-1);
+}
+.top-bar-title { flex: 1; }
+.top-bar-title h1 { font-size: 20px; font-weight: 700; color: var(--md-on-surface); }
+.top-bar-title p { font-size: 12px; color: var(--md-on-surface-variant); margin-top: 1px; }
+.top-bar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* MD3 Icon Button */
+.icon-btn {
+  width: 40px; height: 40px; border-radius: var(--radius-full);
+  border: none; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--md-on-surface-variant);
+  position: relative; transition: background .15s, color .15s;
+}
+.icon-btn:hover { background: var(--md-surface-variant); color: var(--md-on-surface); }
+.icon-btn .dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--md-error); border-radius: 50%;
+  border: 2px solid var(--surface-container);
+}
+
+/* MD3 Filled Tonal Button */
+.tonal-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; font-family: var(--font);
+  transition: background .15s, box-shadow .15s;
+  box-shadow: var(--elev-1);
+}
+.tonal-btn:hover { box-shadow: var(--elev-2); }
+
+/* Dark mode toggle */
+.dark-toggle {
+  width: 52px; height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--md-primary-container);
+  border: 2px solid var(--md-outline-variant);
+  cursor: pointer;
+  position: relative;
+  transition: background .3s, border-color .3s;
+  flex-shrink: 0;
+}
+.dark-toggle .thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--md-primary);
+  position: absolute; top: 2px; left: 2px;
+  transition: transform .3s cubic-bezier(.2,0,0,1), background .3s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+[data-theme="dark"] .dark-toggle .thumb { transform: translateX(24px); }
+
+/* =============================================
+   PAGE CONTENT
+============================================= */
+.page { display: none; padding: 24px; animation: fadeIn .25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* =============================================
+   MD3 CARD
+============================================= */
+.md-card {
+  background: var(--surface-container);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--md-outline-variant);
+  box-shadow: var(--elev-1);
+  transition: background .3s, box-shadow .2s, border-color .3s;
+  overflow: hidden;
+}
+.md-card:hover { box-shadow: var(--elev-2); }
+.md-card-header {
+  padding: 20px 20px 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.md-card-header h3 { font-size: 14px; font-weight: 700; color: var(--md-on-surface); }
+.md-card-header p { font-size: 11.5px; color: var(--md-on-surface-variant); margin-top: 2px; }
+.md-card-body { padding: 16px 20px 20px; }
+
+/* =============================================
+   MD3 CHIP / BADGE
+============================================= */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 12px; border-radius: var(--radius-full);
+  font-size: 11.5px; font-weight: 600;
+  border: 1px solid var(--md-outline-variant);
+  background: var(--md-surface);
+  color: var(--md-on-surface-variant);
+}
+.chip.filled { border: none; }
+.chip.green  { background: #C8F7DC; color: #065F3A; }
+.chip.blue   { background: #DBEAFE; color: #1E40AF; }
+.chip.orange { background: #FEF3C7; color: #92400E; }
+.chip.red    { background: #FEE2E2; color: #991B1B; }
+.chip.purple { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+.chip.gray   { background: var(--surface-container-highest); color: var(--md-on-surface-variant); }
+.chip.cyan   { background: #CFFAFE; color: #164E63; }
+[data-theme="dark"] .chip.green  { background: #064E3B; color: #6EE7B7; }
+[data-theme="dark"] .chip.blue   { background: #1E3A5F; color: #93C5FD; }
+[data-theme="dark"] .chip.orange { background: #451A03; color: #FCD34D; }
+[data-theme="dark"] .chip.red    { background: #450A0A; color: #FCA5A5; }
+[data-theme="dark"] .chip.cyan   { background: #164E63; color: #A5F3FC; }
+
+/* =============================================
+   KPI GRID
+============================================= */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
+.kpi-card {
+  background: var(--surface-container);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--md-outline-variant);
+  padding: 18px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--elev-1);
+  transition: box-shadow .2s, background .3s;
+  cursor: default;
+}
+.kpi-card:hover { box-shadow: var(--elev-3); }
+.kpi-icon-wrap {
+  width: 52px; height: 52px; border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.kpi-icon-wrap.primary { background: var(--md-primary-container); }
+.kpi-icon-wrap.secondary { background: var(--md-secondary-container); }
+.kpi-icon-wrap.tertiary { background: var(--md-tertiary-container); }
+.kpi-icon-wrap.error { background: var(--md-error-container); }
+.kpi-text .kpi-label { font-size: 11.5px; color: var(--md-on-surface-variant); font-weight: 500; }
+.kpi-text .kpi-value { font-size: 24px; font-weight: 800; color: var(--md-on-surface); line-height: 1.2; margin-top: 2px; }
+.kpi-text .kpi-delta { font-size: 11px; margin-top: 3px; font-weight: 600; display: flex; align-items: center; gap: 3px; }
+.kpi-delta.up { color: #059669; }
+.kpi-delta.down { color: var(--md-error); }
+.kpi-delta.neutral { color: var(--md-on-surface-variant); }
+
+/* =============================================
+   LAYOUT GRIDS
+============================================= */
+.grid { display: grid; gap: 14px; margin-bottom: 14px; }
+.g-2     { grid-template-columns: 2fr 1fr; }
+.g-2e    { grid-template-columns: 1fr 1fr; }
+.g-3     { grid-template-columns: 1fr 1fr 1fr; }
+.g-1     { grid-template-columns: 1fr; }
+
+/* =============================================
+   CHART WRAPPER
+============================================= */
+.chart-wrap { position: relative; }
+
+/* =============================================
+   MD3 DATA TABLE
+============================================= */
+.md-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.md-table thead tr { border-bottom: 2px solid var(--md-outline-variant); }
+.md-table th {
+  text-align: left; padding: 10px 12px;
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--md-on-surface-variant);
+}
+.md-table td { padding: 10px 12px; border-bottom: 1px solid var(--md-outline-variant); color: var(--md-on-surface); vertical-align: middle; }
+.md-table tbody tr:last-child td { border-bottom: none; }
+.md-table tbody tr { transition: background .15s; }
+.md-table tbody tr:hover td { background: var(--surface-container-high); }
+
+/* Progress bar */
+.progress { height: 6px; border-radius: var(--radius-full); background: var(--md-outline-variant); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: var(--radius-full); transition: width .4s; }
+
+/* Avatar */
+.av {
+  width: 32px; height: 32px; border-radius: var(--radius-full);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+
+/* =============================================
+   PAGE-SPECIFIC: CLIENTS
+============================================= */
+.client-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-chip {
+  padding: 6px 14px; border-radius: var(--radius-full);
+  border: 1px solid var(--md-outline-variant); background: transparent;
+  color: var(--md-on-surface-variant); font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: var(--font); transition: all .15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--md-primary); color: var(--md-on-primary);
+  border-color: var(--md-primary);
+}
+.search-field {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--md-surface-variant); border-radius: var(--radius-xl);
+  padding: 8px 16px; margin-bottom: 16px; max-width: 360px;
+  transition: background .3s;
+}
+.search-field input {
+  border: none; background: transparent; font-family: var(--font);
+  font-size: 13.5px; color: var(--md-on-surface); outline: none; flex: 1;
+}
+.search-field input::placeholder { color: var(--md-on-surface-variant); }
+
+/* =============================================
+   PAGE-SPECIFIC: TICKETS
+============================================= */
+.ticket-card {
+  background: var(--surface-container);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--md-outline-variant);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  transition: box-shadow .2s, background .3s;
+  box-shadow: var(--elev-1);
+}
+.ticket-card:hover { box-shadow: var(--elev-2); }
+.ticket-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.ticket-title { font-size: 13.5px; font-weight: 600; color: var(--md-on-surface); }
+.ticket-meta { font-size: 11.5px; color: var(--md-on-surface-variant); display: flex; gap: 12px; margin-top: 6px; }
+
+/* =============================================
+   PAGE-SPECIFIC: SALES
+============================================= */
+.sales-kpi { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+.s-kpi {
+  background: var(--md-primary-container);
+  border-radius: var(--radius-lg); padding: 20px;
+  text-align: center; transition: background .3s;
+}
+.s-kpi .s-val { font-size: 28px; font-weight: 800; color: var(--md-on-primary-container); }
+.s-kpi .s-lbl { font-size: 12px; color: var(--md-on-primary-container); opacity: .75; margin-top: 4px; font-weight: 500; }
+
+/* =============================================
+   RESPONSIVE
+============================================= */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .g-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  :root { --sidebar-w: 0px; }
+  .nav-drawer { transform: translateX(-256px); }
+  .nav-drawer.open { transform: translateX(0); }
+  .main-area { margin-left: 0; }
+  .g-2, .g-2e { grid-template-columns: 1fr; }
+  .g-3 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .page { padding: 12px; }
+  .sales-kpi { grid-template-columns: 1fr; }
+}
+
+/* =============================================
+   SCROLLBAR
+============================================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--md-outline-variant); border-radius: 3px; }
+
+/* state layer ripple */
+.ripple { position: relative; overflow: hidden; }
+.ripple::after {
+  content: ''; position: absolute; inset: 0;
+  background: currentColor; opacity: 0;
+  border-radius: inherit; transition: opacity .2s;
+}
+.ripple:active::after { opacity: .12; }
+
+/* =============================================
+   LOGIN PAGE
+============================================= */
+.login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--md-background);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .3s;
+}
+.login-screen.hidden { display: none; }
+.login-card {
+  background: var(--surface-container);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  width: 100%; max-width: 400px;
+  box-shadow: var(--elev-3);
+  animation: fadeIn .3s ease;
+}
+.login-logo {
+  width: 56px; height: 56px; border-radius: var(--radius-lg);
+  background: var(--md-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 900; color: #fff;
+  margin: 0 auto 16px;
+  box-shadow: var(--elev-2);
+}
+.login-title { text-align: center; font-size: 22px; font-weight: 800; color: var(--md-on-surface); margin-bottom: 4px; }
+.login-subtitle { text-align: center; font-size: 13px; color: var(--md-on-surface-variant); margin-bottom: 28px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--md-on-surface-variant); margin-bottom: 6px; letter-spacing: .3px; }
+.login-field input {
+  width: 100%; padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--md-outline-variant);
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font-size: 14px; font-family: var(--font);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.login-field input:focus { border-color: var(--md-primary); box-shadow: 0 0 0 3px rgba(103,80,164,0.15); }
+.login-field input.error { border-color: var(--md-error); box-shadow: 0 0 0 3px rgba(179,38,30,0.12); }
+.login-error { font-size: 11.5px; color: var(--md-error); margin-top: 5px; min-height: 16px; font-weight: 500; }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: var(--md-primary); color: var(--md-on-primary);
+  border: none; border-radius: var(--radius-full);
+  font-size: 14px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; margin-top: 8px;
+  box-shadow: var(--elev-2);
+  transition: background .2s, box-shadow .2s;
+}
+.login-btn:hover { background: var(--md-primary-container); color: var(--md-on-primary-container); box-shadow: var(--elev-3); }
+.login-rules { font-size: 11px; color: var(--md-on-surface-variant); margin-top: 12px; text-align: center; line-height: 1.6; }
+
+/* =============================================
+   HOMEPAGE CARDS
+============================================= */
+.home-welcome {
+  background: linear-gradient(135deg, var(--md-primary), #9c27b0);
+  border-radius: var(--radius-xl); padding: 28px 32px;
+  color: #fff; margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--elev-3);
+}
+.home-welcome h2 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.home-welcome p { font-size: 13px; opacity: .85; }
+.home-welcome .welcome-emoji { font-size: 56px; }
+
+.home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.home-nav-card {
+  background: var(--surface-container);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: box-shadow .2s, transform .2s, background .3s;
+  box-shadow: var(--elev-1);
+  text-decoration: none;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.home-nav-card:hover { box-shadow: var(--elev-3); transform: translateY(-3px); }
+.home-nav-icon {
+  width: 56px; height: 56px; border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+.home-nav-label { font-size: 13px; font-weight: 700; color: var(--md-on-surface); }
+.home-nav-desc { font-size: 11px; color: var(--md-on-surface-variant); }
+.home-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 14px; }
+@media (max-width: 900px) { .home-grid { grid-template-columns: repeat(2,1fr); } .home-stats { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 520px) { .home-grid { grid-template-columns: 1fr 1fr; } .home-stats { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN SCREEN ===================== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">F</div>
+    <div class="login-title">forfx</div>
+    <div class="login-subtitle">Sales & Support Portal — Sign in to continue</div>
+    <div class="login-field">
+      <label>USERNAME</label>
+      <input type="text" id="loginUser" placeholder="Enter your username" autocomplete="off"/>
+      <div class="login-error" id="userError"></div>
+    </div>
+    <div class="login-field">
+      <label>PASSWORD</label>
+      <div style="position:relative">
+        <input type="password" id="loginPass" placeholder="Min 12 chars, letters & numbers" style="padding-right:44px"/>
+        <button type="button" onclick="togglePassView()" id="passToggleBtn"
+          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--md-on-surface-variant);padding:0;line-height:1"
+          title="Show/hide password">👁️</button>
+      </div>
+      <div class="login-error" id="passError"></div>
+    </div>
+    <div class="login-field" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:var(--md-primary);cursor:pointer"/>
+      <label for="rememberMe" style="font-size:12.5px;color:var(--md-on-surface-variant);cursor:pointer;margin:0;font-weight:500">Remember me</label>
+    </div>
+    <button class="login-btn ripple" onclick="doLogin()">🔐 Sign In</button>
+    <div class="login-rules">Password must be at least 12 characters and contain letters & numbers.<br/>Persian characters are not allowed.</div>
+  </div>
+</div>
+
+<!-- ===================== NAVIGATION DRAWER ===================== -->
+<nav class="nav-drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo">F</div>
+    <div class="drawer-brand">
+      <div class="name">forfx</div>
+      <div class="tagline">Sales & Support Portal</div>
+    </div>
+  </div>
+  <div class="drawer-divider"></div>
+
+  <div class="nav-section-label">Overview</div>
+  <a class="nav-item ripple" href="#" data-page="home">
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item ripple active" href="#" data-page="dashboard">
+    <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+  </a>
+
+  <div class="nav-section-label">Sales</div>
+  <a class="nav-item ripple" href="#" data-page="sales">
+    <span class="nav-icon">💰</span><span class="nav-label">Sales Analytics</span>
+  </a>
+  <a class="nav-item ripple" href="#" data-page="clients">
+    <span class="nav-icon">👥</span><span class="nav-label">Clients</span>
+  </a>
+  <a class="nav-item ripple" href="#" data-page="geography">
+    <span class="nav-icon">🌍</span><span class="nav-label">Geography</span>
+  </a>
+
+  <div class="nav-section-label">Support</div>
+  <a class="nav-item ripple" href="#" data-page="tickets">
+    <span class="nav-icon">🎫</span><span class="nav-label">Tickets</span>
+    <span class="nav-badge" id="ticketBadge">27</span>
+  </a>
+  <a class="nav-item ripple" href="#" data-page="agents">
+    <span class="nav-icon">🧑‍💼</span><span class="nav-label">Agents</span>
+  </a>
+
+  <div class="nav-section-label">Insights</div>
+  <a class="nav-item ripple" href="#" data-page="marketing">
+    <span class="nav-icon">📣</span><span class="nav-label">Marketing</span>
+  </a>
+  <a class="nav-item ripple" href="#" data-page="reports">
+    <span class="nav-icon">📋</span><span class="nav-label">Reports</span>
+  </a>
+
+  <div class="drawer-user" style="cursor:pointer" onclick="navigate('home')" title="Go to Homepage">
+    <div class="user-av">SA</div>
+    <div class="user-info" style="flex:1">
+      <div class="u-name">Mahya Opofinance</div>
+      <div class="u-role">Sales & Support</div>
+    </div>
+    <button onclick="event.stopPropagation();doLogout()" title="Logout"
+      style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--md-on-surface-variant);padding:4px;border-radius:50%;transition:background .15s"
+      onmouseover="this.style.background='rgba(179,38,30,0.1)'"
+      onmouseout="this.style.background='none'">🚪</button>
+  </div>
+</nav>
+
+<!-- ===================== MAIN AREA ===================== -->
+<div class="main-area">
+
+  <!-- TOP APP BAR -->
+  <header class="top-bar">
+    <button class="icon-btn" id="menuBtn" onclick="toggleDrawer()">☰</button>
+    <div class="top-bar-title">
+      <h1 id="pageTitle">Dashboard</h1>
+      <p id="pageSubtitle">Overview of client activity, revenue, and support</p>
+    </div>
+    <div class="top-bar-actions">
+      <span style="font-size:12px;color:var(--md-on-surface-variant)">📅 Apr 9, 2026</span>
+      <button class="icon-btn" title="Notifications">🔔<span class="dot"></span></button>
+      <div class="dark-toggle ripple" onclick="toggleDark()" title="Toggle dark mode">
+        <div class="thumb" id="darkThumb">☀️</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       PAGE: HOME
+  ====================================================== -->
+  <div class="page" id="page-home">
+    <div class="home-welcome">
+      <div>
+        <h2>Welcome back, Mahya 👋</h2>
+        <p>Here's a quick overview of your forfx dashboard. Click any section to explore.</p>
+      </div>
+      <div class="welcome-emoji">🚀</div>
+    </div>
+
+    <div class="home-stats">
+      <div class="kpi-card"><div class="kpi-icon-wrap primary">👥</div><div class="kpi-text"><div class="kpi-label">Total Clients</div><div class="kpi-value">100</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon-wrap primary">💵</div><div class="kpi-text"><div class="kpi-label">Revenue</div><div class="kpi-value">$571K</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon-wrap error">🎫</div><div class="kpi-text"><div class="kpi-label">Open Tickets</div><div class="kpi-value">27</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon-wrap secondary">⭐</div><div class="kpi-text"><div class="kpi-label">VIP Clients</div><div class="kpi-value">10</div></div></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--md-on-surface-variant);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">Quick Navigation</div>
+    <div class="home-grid">
+      <div class="home-nav-card ripple" onclick="navigate('dashboard')">
+        <div class="home-nav-icon" style="background:var(--md-primary-container)">📊</div>
+        <div class="home-nav-label">Dashboard</div>
+        <div class="home-nav-desc">KPIs, revenue & segmentation</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('sales')">
+        <div class="home-nav-icon" style="background:#E8F5E9">💰</div>
+        <div class="home-nav-label">Sales Analytics</div>
+        <div class="home-nav-desc">Revenue trends & account types</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('clients')">
+        <div class="home-nav-icon" style="background:#E3F2FD">👥</div>
+        <div class="home-nav-label">Clients</div>
+        <div class="home-nav-desc">Full client list with filters</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('geography')">
+        <div class="home-nav-icon" style="background:#F3E5F5">🌍</div>
+        <div class="home-nav-label">Geography</div>
+        <div class="home-nav-desc">Country & regional breakdown</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('tickets')">
+        <div class="home-nav-icon" style="background:#FFEBEE">🎫</div>
+        <div class="home-nav-label">Tickets</div>
+        <div class="home-nav-desc">Support pipeline & live feed</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('agents')">
+        <div class="home-nav-icon" style="background:#FFF3E0">🧑‍💼</div>
+        <div class="home-nav-label">Agents</div>
+        <div class="home-nav-desc">Workload & performance</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('marketing')">
+        <div class="home-nav-icon" style="background:#E0F7FA">📣</div>
+        <div class="home-nav-label">Marketing</div>
+        <div class="home-nav-desc">UTM sources & campaigns</div>
+      </div>
+      <div class="home-nav-card ripple" onclick="navigate('reports')">
+        <div class="home-nav-icon" style="background:#EDE7F6">📋</div>
+        <div class="home-nav-label">Reports</div>
+        <div class="home-nav-desc">KPI targets & summary</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: DASHBOARD
+  ====================================================== -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap primary">👥</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Total Clients</div>
+          <div class="kpi-value">100</div>
+          <div class="kpi-delta up">↑ 12% this month</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap primary">💵</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-value">$571K</div>
+          <div class="kpi-delta up">↑ 8.4% vs last month</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap secondary">🏦</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Total Deposits</div>
+          <div class="kpi-value">$4.36M</div>
+          <div class="kpi-delta up">↑ 5.1% this month</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap error">🎫</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Open Tickets</div>
+          <div class="kpi-value">27</div>
+          <div class="kpi-delta down">↑ 3 since yesterday</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap secondary">⭐</div>
+        <div class="kpi-text">
+          <div class="kpi-label">VIP Clients</div>
+          <div class="kpi-value">10</div>
+          <div class="kpi-delta up">↑ 2 new this week</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap primary">✅</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Converted</div>
+          <div class="kpi-value">7</div>
+          <div class="kpi-delta neutral">7% conversion rate</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap error">⚡</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Escalated</div>
+          <div class="kpi-value">14</div>
+          <div class="kpi-delta down">Needs attention</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap tertiary">⏱️</div>
+        <div class="kpi-text">
+          <div class="kpi-label">Avg Response Time</div>
+          <div class="kpi-value">36.6h</div>
+          <div class="kpi-delta down">Above 24h target</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g-2">
+      <div class="md-card">
+        <div class="md-card-header">
+          <div><h3>📈 Monthly Revenue & New Clients</h3><p>12-month performance trend</p></div>
+          <span class="chip">Last 12 Months</span>
+        </div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:230px"><canvas id="c-sales"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>🎯 Client Segmentation</h3><p>Pipeline & potential</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:210px"><canvas id="c-seg"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="grid g-3">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>💻 Platform Usage</h3><p>Active trading platforms</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:200px"><canvas id="c-platform"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📋 Ticket Pipeline</h3><p>Current ticket statuses</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:200px"><canvas id="c-ticketStatus"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>🔑 Leverage Preference</h3><p>Client leverage distribution</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:200px"><canvas id="c-leverage"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: SALES
+  ====================================================== -->
+  <div class="page" id="page-sales">
+    <div class="sales-kpi">
+      <div class="s-kpi"><div class="s-val">$571K</div><div class="s-lbl">Total Revenue</div></div>
+      <div class="s-kpi"><div class="s-val">$4.36M</div><div class="s-lbl">Total Deposits</div></div>
+      <div class="s-kpi"><div class="s-val">24,447</div><div class="s-lbl">Total Trades</div></div>
+    </div>
+    <div class="grid g-1">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📈 Revenue Over Time</h3><p>Monthly revenue trend — last 12 months</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:280px"><canvas id="c-salesFull"></canvas></div></div>
+      </div>
+    </div>
+    <div class="grid g-2e">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>🏷️ Account Types</h3><p>Distribution by account category</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:220px"><canvas id="c-account"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📦 Purchase Plans</h3><p>Top plans by client count</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:220px"><canvas id="c-plans"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: CLIENTS
+  ====================================================== -->
+  <div class="page" id="page-clients">
+    <div class="search-field">
+      <span>🔍</span>
+      <input type="text" placeholder="Search clients..." id="clientSearch" oninput="filterClients()"/>
+    </div>
+    <div class="client-filters">
+      <button class="filter-chip active" onclick="setFilter(this,'All')">All (100)</button>
+      <button class="filter-chip" onclick="setFilter(this,'VIP Active')">⭐ VIP (10)</button>
+      <button class="filter-chip" onclick="setFilter(this,'Converted')">✅ Converted (7)</button>
+      <button class="filter-chip" onclick="setFilter(this,'Active')">🟢 Active (9)</button>
+      <button class="filter-chip" onclick="setFilter(this,'Follow Up')">📞 Follow Up (9)</button>
+      <button class="filter-chip" onclick="setFilter(this,'New Lead')">🔵 New Lead (10)</button>
+      <button class="filter-chip" onclick="setFilter(this,'Pending KYC')">⏳ Pending KYC (13)</button>
+      <button class="filter-chip" onclick="setFilter(this,'Churned')">❌ Churned (14)</button>
+    </div>
+    <div class="md-card">
+      <div class="md-card-body" style="padding:0">
+        <table class="md-table" id="clientTable">
+          <thead>
+            <tr>
+              <th>Client</th><th>Country</th><th>Status</th><th>Amount (USD)</th>
+              <th>Platform</th><th>Account</th><th>Trades</th><th>Agent</th>
+            </tr>
+          </thead>
+          <tbody id="clientBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: GEOGRAPHY
+  ====================================================== -->
+  <div class="page" id="page-geography">
+    <div class="grid g-2e">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>🌍 Clients by Country</h3><p>Top 10 markets</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:300px"><canvas id="c-country"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📊 Revenue by Region</h3><p>Geographic revenue breakdown</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:300px"><canvas id="c-region"></canvas></div></div>
+      </div>
+    </div>
+    <div class="md-card">
+      <div class="md-card-header"><div><h3>🗺️ Country Performance Table</h3><p>Detailed breakdown per country</p></div></div>
+      <div class="md-card-body" style="padding:0">
+        <table class="md-table">
+          <thead><tr><th>Country</th><th>Clients</th><th>Share</th><th>Avg Deposit</th><th>Status</th></tr></thead>
+          <tbody id="geoBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: TICKETS
+  ====================================================== -->
+  <div class="page" id="page-tickets">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-icon-wrap error">🔴</div><div class="kpi-text"><div class="kpi-label">Open</div><div class="kpi-value">13</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon-wrap error">⚡</div><div class="kpi-text"><div class="kpi-label">Escalated</div><div class="kpi-value">14</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon-wrap primary">🔄</div><div class="kpi-text"><div class="kpi-label">In Progress</div><div class="kpi-value">16</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon-wrap secondary">✅</div><div class="kpi-text"><div class="kpi-label">Resolved</div><div class="kpi-value">11</div></div></div>
+    </div>
+    <div class="grid g-2e">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>🎫 Ticket Categories</h3><p>Issues by type</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:250px"><canvas id="c-ticketCat"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📊 Status Breakdown</h3><p>All ticket statuses</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:250px"><canvas id="c-ticketStatusFull"></canvas></div></div>
+      </div>
+    </div>
+    <div class="md-card">
+      <div class="md-card-header"><div><h3>🔥 Live Ticket Feed</h3><p>Recent open & escalated tickets</p></div></div>
+      <div class="md-card-body" id="ticketFeed"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: AGENTS
+  ====================================================== -->
+  <div class="page" id="page-agents">
+    <div class="grid g-2e">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>🧑‍💼 Agent Workload</h3><p>Tickets assigned per agent</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:260px"><canvas id="c-agents"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>⏱️ Response Time by Agent</h3><p>Average hours to first response</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:260px"><canvas id="c-agentResp"></canvas></div></div>
+      </div>
+    </div>
+    <div class="md-card">
+      <div class="md-card-header"><div><h3>📋 Agent Performance Table</h3><p>Full breakdown per agent</p></div></div>
+      <div class="md-card-body" style="padding:0">
+        <table class="md-table">
+          <thead><tr><th>Agent</th><th>Tickets</th><th>Resolved</th><th>Avg Resp.</th><th>Workload</th><th>Rating</th></tr></thead>
+          <tbody id="agentBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: MARKETING
+  ====================================================== -->
+  <div class="page" id="page-marketing">
+    <div class="grid g-2e">
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📣 Traffic Sources (UTM)</h3><p>Lead acquisition by source</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:260px"><canvas id="c-utm"></canvas></div></div>
+      </div>
+      <div class="md-card">
+        <div class="md-card-header"><div><h3>📱 UTM Medium</h3><p>Channel distribution</p></div></div>
+        <div class="md-card-body"><div class="chart-wrap" style="height:260px"><canvas id="c-medium"></canvas></div></div>
+      </div>
+    </div>
+    <div class="md-card">
+      <div class="md-card-header"><div><h3>🏆 Campaign Performance</h3><p>Top campaigns by leads</p></div></div>
+      <div class="md-card-body"><div class="chart-wrap" style="height:220px"><canvas id="c-campaign"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PAGE: REPORTS
+  ====================================================== -->
+  <div class="page" id="page-reports">
+    <div class="grid g-3">
+      <div class="md-card" style="padding:24px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">📊</div>
+        <div style="font-size:14px;font-weight:700;color:var(--md-on-surface)">Monthly Report</div>
+        <div style="font-size:12px;color:var(--md-on-surface-variant);margin:6px 0 14px">Full sales & support summary</div>
+        <button class="tonal-btn ripple" style="width:100%;justify-content:center">View Report</button>
+      </div>
+      <div class="md-card" style="padding:24px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">🎫</div>
+        <div style="font-size:14px;font-weight:700;color:var(--md-on-surface)">Ticket Report</div>
+        <div style="font-size:12px;color:var(--md-on-surface-variant);margin:6px 0 14px">Support performance & SLA</div>
+        <button class="tonal-btn ripple" style="width:100%;justify-content:center">View Report</button>
+      </div>
+      <div class="md-card" style="padding:24px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">💰</div>
+        <div style="font-size:14px;font-weight:700;color:var(--md-on-surface)">Revenue Report</div>
+        <div style="font-size:12px;color:var(--md-on-surface-variant);margin:6px 0 14px">Deposits, P&L, conversions</div>
+        <button class="tonal-btn ripple" style="width:100%;justify-content:center">View Report</button>
+      </div>
+    </div>
+    <div class="md-card">
+      <div class="md-card-header"><div><h3>📈 Summary — All KPIs</h3><p>Consolidated performance overview</p></div></div>
+      <div class="md-card-body" style="padding:0">
+        <table class="md-table">
+          <thead><tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Total Revenue</td><td><strong>$571,387</strong></td><td>$500,000</td><td><span class="chip filled green">✅ Above Target</span></td></tr>
+            <tr><td>Conversion Rate</td><td><strong>7%</strong></td><td>10%</td><td><span class="chip filled orange">⚠️ Below Target</span></td></tr>
+            <tr><td>Avg Response Time</td><td><strong>36.6h</strong></td><td>24h</td><td><span class="chip filled red">❌ Above Target</span></td></tr>
+            <tr><td>VIP Clients</td><td><strong>10</strong></td><td>8</td><td><span class="chip filled green">✅ Above Target</span></td></tr>
+            <tr><td>Total Deposits</td><td><strong>$4.36M</strong></td><td>$4M</td><td><span class="chip filled green">✅ Above Target</span></td></tr>
+            <tr><td>Escalated Tickets</td><td><strong>14</strong></td><td>&lt; 10</td><td><span class="chip filled red">❌ Above Target</span></td></tr>
+            <tr><td>Churned Clients</td><td><strong>14%</strong></td><td>&lt; 10%</td><td><span class="chip filled orange">⚠️ Monitor</span></td></tr>
+            <tr><td>Total Trades</td><td><strong>24,447</strong></td><td>20,000</td><td><span class="chip filled green">✅ Above Target</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main-area -->
+
+<script>
+// =============================================
+// DATA
+// =============================================
+const months = ['May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26'];
+const revenue = [44689,19736,32813,59524,80868,71675,59400,28610,33922,31641,22756,37032];
+const newClients = [11,3,6,9,13,10,10,9,8,5,8,4];
+
+const segLabels = ['Churned','Pending KYC','Rejected','New Lead','VIP Active','On Hold','Follow Up','Active','Converted','Inactive'];
+const segData   = [14,13,11,10,10,10,9,9,7,7];
+const segColors = ['#ef4444','#f59e0b','#f87171','#6750A4','#8b5cf6','#94a3b8','#fb923c','#10b981','#059669','#cbd5e1'];
+
+const platformLabels = ['WebTrader','cTrader','MT5','MT4'];
+const platformData   = [32,24,23,21];
+const platformColors = ['#6750A4','#9c27b0','#7c3aed','#a855f7'];
+
+const accountLabels = ['Mini','VIP','ECN','Cent','Standard','Islamic','Pro'];
+const accountData   = [20,16,15,13,13,12,11];
+const accountColors = ['#6750A4','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#ef4444'];
+
+const ticketCatLabels = ['Trade Dispute','Password Reset','Deposit Problem','Leverage Request','Withdrawal Issue','General Inquiry','Acct Suspension','Bonus Inquiry','KYC Verification','Platform Error'];
+const ticketCatData   = [14,14,13,13,12,10,8,7,6,3];
+
+const ticketStatusLabels = ['Reopened','In Progress','Pending Client','Escalated','Open','Closed','Resolved'];
+const ticketStatusData   = [18,16,15,14,13,13,11];
+const ticketColors = ['#ef4444','#f59e0b','#fb923c','#dc2626','#6750A4','#10b981','#059669'];
+
+const leverageLabels = ['1:50','1:100','1:200','1:500','1:1000'];
+const leverageData   = [25,20,17,19,19];
+
+const countryLabels = ['Qatar','Australia','Germany','Iran','Indonesia','Jordan','Iraq','Pakistan','India','Turkey'];
+const countryData   = [7,7,7,7,7,6,6,6,5,5];
+
+const utmLabels  = ['LinkedIn','Direct','YouTube','Twitter','Google','Partner','TikTok','Facebook','Bing','Instagram'];
+const utmData    = [13,13,12,11,11,10,9,8,7,6];
+
+const mediumLabels = ['CPC','Email','Social','Organic','Referral','Display','Affiliate'];
+const mediumData   = [18,15,14,13,12,10,8];
+
+const campaignLabels = ['Summer Promo','Ramadan Offer','Welcome Bonus','Forex Webinar','Referral Program','Google Ads Q1','Email Blast'];
+const campaignData   = [16,14,12,11,10,9,8];
+
+const planLabels = ['MT4 Standard','MT5 Pro','ECN Account','Islamic Account','VIP Account','Mini Account','Cent Account'];
+const planData   = [18,16,15,14,13,12,12];
+
+const agentNames   = ['Ali R.','Omar H.','Nour S.','David P.','Lena T.','Fatima K.','Reza A.','Sara M.'];
+const agentColors  = ['#6750A4','#8b5cf6','#10b981','#f59e0b','#06b6d4','#ec4899','#ef4444','#14b8a6'];
+const agentTickets = [17,14,13,13,13,11,10,9];
+const agentResp    = [28,35,22,40,31,29,45,38];
+
+const clientData = [
+  {name:'Ali Al-Rashid',country:'Qatar',status:'VIP Active',amount:15000,platform:'MT5',account:'VIP',trades:412,agent:'Sara M.'},
+  {name:'Sara Karimi',country:'Iran',status:'Converted',amount:10000,platform:'MT4',account:'ECN',trades:287,agent:'Ali R.'},
+  {name:'Omar Bakr',country:'UAE',status:'Active',amount:5000,platform:'WebTrader',account:'Standard',trades:156,agent:'Nour S.'},
+  {name:'Layla Santos',country:'Jordan',status:'New Lead',amount:500,platform:'cTrader',account:'Mini',trades:12,agent:'Fatima K.'},
+  {name:'Hassan Kim',country:'Pakistan',status:'Follow Up',amount:1000,platform:'MT5',account:'Islamic',trades:45,agent:'Omar H.'},
+  {name:'Fatima Müller',country:'Germany',status:'Pending KYC',amount:2000,platform:'MT4',account:'Standard',trades:0,agent:'Lena T.'},
+  {name:'Reza Dupont',country:'France',status:'Churned',amount:3000,platform:'WebTrader',account:'Pro',trades:203,agent:'Reza A.'},
+  {name:'Nour Tanaka',country:'Japan',status:'VIP Active',amount:25000,platform:'MT5',account:'VIP',trades:502,agent:'David P.'},
+  {name:'David Ivanov',country:'Australia',status:'Active',amount:7500,platform:'cTrader',account:'ECN',trades:189,agent:'Sara M.'},
+  {name:'Emma Patel',country:'India',status:'Converted',amount:4000,platform:'MT4',account:'Cent',trades:78,agent:'Ali R.'},
+  {name:'James Garcia',country:'UAE',status:'On Hold',amount:1500,platform:'WebTrader',account:'Standard',trades:34,agent:'Nour S.'},
+  {name:'Sophia Kim',country:'South Korea',status:'Inactive',amount:2500,platform:'MT5',account:'Mini',trades:67,agent:'Fatima K.'},
+  {name:'Lucas Martinez',country:'Spain',status:'Rejected',amount:0,platform:'N/A',account:'N/A',trades:0,agent:'Omar H.'},
+  {name:'Ava Nguyen',country:'Vietnam',status:'New Lead',amount:200,platform:'WebTrader',account:'Cent',trades:5,agent:'Lena T.'},
+  {name:'Noah Wilson',country:'UK',status:'Follow Up',amount:800,platform:'MT4',account:'Standard',trades:23,agent:'Reza A.'},
+  {name:'Isabella Brown',country:'Canada',status:'VIP Active',amount:20000,platform:'cTrader',account:'VIP',trades:445,agent:'David P.'},
+];
+
+const statusChip = {
+  'VIP Active':  '<span class="chip filled purple">⭐ VIP Active</span>',
+  'Converted':   '<span class="chip filled green">✅ Converted</span>',
+  'Active':      '<span class="chip filled green">🟢 Active</span>',
+  'New Lead':    '<span class="chip filled blue">🔵 New Lead</span>',
+  'Follow Up':   '<span class="chip filled orange">📞 Follow Up</span>',
+  'Pending KYC': '<span class="chip filled orange">⏳ Pending KYC</span>',
+  'On Hold':     '<span class="chip filled gray">⏸️ On Hold</span>',
+  'Inactive':    '<span class="chip filled gray">😴 Inactive</span>',
+  'Churned':     '<span class="chip filled red">❌ Churned</span>',
+  'Rejected':    '<span class="chip filled red">🚫 Rejected</span>',
+};
+
+// =============================================
+// ROUTER
+// =============================================
+// =============================================
+// LOGIN / LOGOUT
+// =============================================
+const PERSIAN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+// ---- Password show/hide ----
+function togglePassView() {
+  const input = document.getElementById('loginPass');
+  const btn = document.getElementById('passToggleBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+    btn.title = 'Hide password';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁️';
+    btn.title = 'Show password';
+  }
+}
+
+// ---- Load saved credentials ----
+window.addEventListener('load', () => {
+  const saved = JSON.parse(localStorage.getItem('forfx_creds') || '{}');
+  if (saved.user) {
+    document.getElementById('loginUser').value = saved.user;
+    document.getElementById('loginPass').value = saved.pass || '';
+    document.getElementById('rememberMe').checked = true;
+  }
+});
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  let valid = true;
+
+  document.getElementById('userError').textContent = '';
+  document.getElementById('passError').textContent = '';
+  document.getElementById('loginUser').classList.remove('error');
+  document.getElementById('loginPass').classList.remove('error');
+
+  if (!user) {
+    document.getElementById('userError').textContent = 'Username is required.';
+    document.getElementById('loginUser').classList.add('error');
+    valid = false;
+  } else if (PERSIAN_RE.test(user)) {
+    document.getElementById('userError').textContent = '⚠️ Persian characters are not allowed.';
+    document.getElementById('loginUser').classList.add('error');
+    valid = false;
+  }
+
+  if (!pass) {
+    document.getElementById('passError').textContent = 'Password is required.';
+    document.getElementById('loginPass').classList.add('error');
+    valid = false;
+  } else if (PERSIAN_RE.test(pass)) {
+    document.getElementById('passError').textContent = '⚠️ Persian characters are not allowed.';
+    document.getElementById('loginPass').classList.add('error');
+    valid = false;
+  } else if (pass.length < 12) {
+    document.getElementById('passError').textContent = '⚠️ Password must be at least 12 characters.';
+    document.getElementById('loginPass').classList.add('error');
+    valid = false;
+  } else if (!/[a-zA-Z]/.test(pass) || !/[0-9]/.test(pass)) {
+    document.getElementById('passError').textContent = '⚠️ Password must contain both letters and numbers.';
+    document.getElementById('loginPass').classList.add('error');
+    valid = false;
+  }
+
+  if (valid) {
+    if (document.getElementById('rememberMe').checked) {
+      localStorage.setItem('forfx_creds', JSON.stringify({ user, pass }));
+    } else {
+      localStorage.removeItem('forfx_creds');
+    }
+    document.getElementById('loginScreen').classList.add('hidden');
+    navigate('home');
+  }
+}
+
+function doLogout() {
+  // Only clear fields if "remember me" is off
+  if (!document.getElementById('rememberMe').checked) {
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    localStorage.removeItem('forfx_creds');
+  }
+  document.getElementById('userError').textContent = '';
+  document.getElementById('passError').textContent = '';
+  // Reset password field back to hidden
+  document.getElementById('loginPass').type = 'password';
+  document.getElementById('passToggleBtn').textContent = '👁️';
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// Allow Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) {
+    doLogin();
+  }
+});
+
+// Real-time Persian detection
+['loginUser','loginPass'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function() {
+    const errId = id === 'loginUser' ? 'userError' : 'passError';
+    if (PERSIAN_RE.test(this.value)) {
+      document.getElementById(errId).textContent = '⚠️ Persian characters are not allowed.';
+      this.classList.add('error');
+    } else {
+      document.getElementById(errId).textContent = '';
+      this.classList.remove('error');
+    }
+  });
+});
+
+const pages = {
+  home:      { title: 'Home', subtitle: 'Quick access to all sections of the dashboard' },
+  dashboard: { title: 'Dashboard', subtitle: 'Overview of client activity, revenue, and support' },
+  sales:     { title: 'Sales Analytics', subtitle: 'Revenue, deposits, and conversion performance' },
+  clients:   { title: 'Clients', subtitle: 'Client list, segmentation, and pipeline' },
+  geography: { title: 'Geography', subtitle: 'Geographic distribution of clients and revenue' },
+  tickets:   { title: 'Tickets', subtitle: 'Support tickets, categories, and SLA status' },
+  agents:    { title: 'Agents', subtitle: 'Agent performance and workload distribution' },
+  marketing: { title: 'Marketing', subtitle: 'UTM sources, campaigns, and traffic channels' },
+  reports:   { title: 'Reports', subtitle: 'KPI summary and exportable reports' },
+};
+
+let currentPage = 'dashboard';
+
+function navigate(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+  document.getElementById('pageTitle').textContent = pages[pageId].title;
+  document.getElementById('pageSubtitle').textContent = pages[pageId].subtitle;
+  currentPage = pageId;
+  window.location.hash = pageId;
+  initPageCharts(pageId);
+  if (pageId === 'clients') buildClientTable('All');
+  if (pageId === 'geography') buildGeoTable();
+  if (pageId === 'agents') buildAgentTable();
+  if (pageId === 'tickets') buildTicketFeed();
+}
+
+document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    navigate(item.dataset.page);
+  });
+});
+
+// Hash routing — login screen shows first, navigation only after login
+window.addEventListener('load', () => {
+  // Login screen is shown by default; navigation happens after login
+});
+
+// =============================================
+// DARK MODE
+// =============================================
+function toggleDark() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('darkThumb').textContent = isDark ? '☀️' : '🌙';
+  rebuildAllCharts();
+}
+
+// =============================================
+// SIDEBAR TOGGLE (mobile)
+// =============================================
+function toggleDrawer() {
+  document.getElementById('drawer').classList.toggle('open');
+}
+
+// =============================================
+// CHART HELPERS
+// =============================================
+const chartInstances = {};
+
+function getThemeColors() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    text: dark ? '#CAC4D0' : '#49454F',
+    grid: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    surface: dark ? '#2B2930' : '#FFFFFF',
+  };
+}
+
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function mkChart(id, config) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  const t = getThemeColors();
+  if (!config.options) config.options = {};
+  if (!config.options.plugins) config.options.plugins = {};
+  config.options.responsive = true;
+  config.options.maintainAspectRatio = false;
+  config.options.plugins.legend = config.options.plugins.legend || { labels: { color: t.text, font: { size: 11 }, boxWidth: 12 } };
+  if (config.options.scales) {
+    for (const ax of Object.values(config.options.scales)) {
+      if (!ax.ticks) ax.ticks = {};
+      ax.ticks.color = t.text;
+      ax.ticks.font = { size: 10 };
+      if (ax.grid) ax.grid.color = t.grid;
+    }
+  }
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+// =============================================
+// INIT CHARTS PER PAGE
+// =============================================
+function initPageCharts(page) {
+  Chart.defaults.color = getThemeColors().text;
+  if (page === 'dashboard') buildDashboardCharts();
+  if (page === 'sales') buildSalesCharts();
+  if (page === 'geography') buildGeoCharts();
+  if (page === 'tickets') buildTicketCharts();
+  if (page === 'agents') buildAgentCharts();
+  if (page === 'marketing') buildMarketingCharts();
+}
+
+function rebuildAllCharts() {
+  initPageCharts(currentPage);
+}
+
+function buildDashboardCharts() {
+  // Sales combo
+  mkChart('c-sales', {
+    data: {
+      labels: months,
+      datasets: [
+        { type:'bar', label:'Revenue ($)', data:revenue,
+          backgroundColor: revenue.map((v,i) => i===8 ? '#6750A4' : 'rgba(103,80,164,0.55)'),
+          borderRadius:6, yAxisID:'y', order:2 },
+        { type:'line', label:'New Clients', data:newClients,
+          borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)',
+          borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#10b981',
+          fill:true, tension:0.4, yAxisID:'y1', order:1 }
+      ]
+    },
+    options: {
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        y:{position:'left', ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K'}, grid:{}},
+        y1:{position:'right', grid:{display:false}},
+        x:{grid:{display:false}}
+      }
+    }
+  });
+
+  // Seg doughnut
+  mkChart('c-seg', {
+    type:'doughnut',
+    data:{labels:segLabels, datasets:[{data:segData, backgroundColor:segColors, borderWidth:2, borderColor:'transparent'}]},
+    options:{cutout:'65%', plugins:{legend:{position:'right', labels:{boxWidth:10,padding:6}}}}
+  });
+
+  // Platform
+  mkChart('c-platform', {
+    type:'doughnut',
+    data:{labels:platformLabels, datasets:[{data:platformData, backgroundColor:platformColors, borderWidth:2, borderColor:'transparent'}]},
+    options:{cutout:'60%', plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:8}}}}
+  });
+
+  // Ticket Status
+  mkChart('c-ticketStatus', {
+    type:'doughnut',
+    data:{labels:ticketStatusLabels, datasets:[{data:ticketStatusData, backgroundColor:ticketColors, borderWidth:2, borderColor:'transparent'}]},
+    options:{cutout:'55%', plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:5, font:{size:9}}}}}
+  });
+
+  // Leverage
+  mkChart('c-leverage', {
+    type:'bar',
+    data:{labels:leverageLabels, datasets:[{label:'Clients', data:leverageData,
+      backgroundColor:['#6750A4','#8b5cf6','#a855f7','#c084fc','#ddd6fe'], borderRadius:6}]},
+    options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{grid:{}}}}
+  });
+}
+
+function buildSalesCharts() {
+  mkChart('c-salesFull', {
+    type:'line',
+    data:{
+      labels:months,
+      datasets:[
+        { label:'Revenue ($)', data:revenue, borderColor:'#6750A4', backgroundColor:'rgba(103,80,164,0.15)',
+          borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#6750A4', fill:true, tension:0.4 },
+        { label:'New Clients', data:newClients.map(v=>v*3000), borderColor:'#10b981',
+          backgroundColor:'rgba(16,185,129,0.05)', borderWidth:2, pointRadius:4,
+          pointBackgroundColor:'#10b981', fill:true, tension:0.4, borderDash:[6,3] }
+      ]
+    },
+    options:{
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        y:{ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K'}, grid:{}},
+        x:{grid:{display:false}}
+      }
+    }
+  });
+
+  mkChart('c-account', {
+    type:'pie',
+    data:{labels:accountLabels, datasets:[{data:accountData, backgroundColor:accountColors, borderWidth:2, borderColor:'transparent'}]},
+    options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:6}}}}
+  });
+
+  mkChart('c-plans', {
+    type:'bar',
+    data:{labels:planLabels, datasets:[{label:'Clients', data:planData,
+      backgroundColor:'rgba(103,80,164,0.7)', borderRadius:6}]},
+    options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{}}, y:{grid:{display:false}}}}
+  });
+}
+
+function buildGeoCharts() {
+  mkChart('c-country', {
+    type:'bar',
+    data:{labels:countryLabels, datasets:[{label:'Clients', data:countryData,
+      backgroundColor:countryData.map((_,i)=>`hsl(${260+i*8},50%,${55+i*2}%)`), borderRadius:6}]},
+    options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{}}, y:{grid:{display:false}}}}
+  });
+
+  mkChart('c-region', {
+    type:'doughnut',
+    data:{
+      labels:['MENA','Asia Pacific','Europe','Americas'],
+      datasets:[{data:[42,28,20,10],
+        backgroundColor:['#6750A4','#a855f7','#8b5cf6','#c084fc'], borderWidth:2, borderColor:'transparent'}]
+    },
+    options:{cutout:'60%', plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:8}}}}
+  });
+}
+
+function buildTicketCharts() {
+  mkChart('c-ticketCat', {
+    type:'bar',
+    data:{labels:ticketCatLabels, datasets:[{label:'Count', data:ticketCatData,
+      backgroundColor:'rgba(179,38,30,0.7)', borderRadius:4}]},
+    options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{}}, y:{grid:{display:false}, ticks:{font:{size:10}}}}}
+  });
+
+  mkChart('c-ticketStatusFull', {
+    type:'doughnut',
+    data:{labels:ticketStatusLabels, datasets:[{data:ticketStatusData, backgroundColor:ticketColors, borderWidth:2, borderColor:'transparent'}]},
+    options:{cutout:'55%', plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:6}}}}
+  });
+}
+
+function buildAgentCharts() {
+  mkChart('c-agents', {
+    type:'bar',
+    data:{labels:agentNames, datasets:[{label:'Tickets', data:agentTickets, backgroundColor:agentColors, borderRadius:6}]},
+    options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{}}}}
+  });
+
+  mkChart('c-agentResp', {
+    type:'bar',
+    data:{labels:agentNames, datasets:[{label:'Avg Hrs', data:agentResp,
+      backgroundColor:agentResp.map(v=>v>36?'rgba(179,38,30,0.7)':'rgba(103,80,164,0.7)'), borderRadius:6}]},
+    options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{ticks:{callback:v=>v+'h'}, grid:{}}}}
+  });
+}
+
+function buildMarketingCharts() {
+  mkChart('c-utm', {
+    type:'bar',
+    data:{labels:utmLabels, datasets:[{label:'Leads', data:utmData,
+      backgroundColor:utmData.map((_,i)=>`hsl(${260+i*12},55%,60%)`), borderRadius:6}]},
+    options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{}}}}
+  });
+
+  mkChart('c-medium', {
+    type:'doughnut',
+    data:{labels:mediumLabels, datasets:[{data:mediumData,
+      backgroundColor:['#6750A4','#8b5cf6','#a855f7','#c084fc','#10b981','#f59e0b','#ef4444'],
+      borderWidth:2, borderColor:'transparent'}]},
+    options:{cutout:'60%', plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:8}}}}
+  });
+
+  mkChart('c-campaign', {
+    type:'bar',
+    data:{labels:campaignLabels, datasets:[{label:'Leads', data:campaignData,
+      backgroundColor:'rgba(103,80,164,0.7)', borderRadius:6}]},
+    options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{}}}}
+  });
+}
+
+// =============================================
+// CLIENTS TABLE
+// =============================================
+let clientFilter = 'All';
+
+function buildClientTable(filter) {
+  clientFilter = filter;
+  const q = (document.getElementById('clientSearch')?.value || '').toLowerCase();
+  const body = document.getElementById('clientBody');
+  body.innerHTML = '';
+  let filtered = clientData.filter(c => {
+    const matchFilter = filter === 'All' || c.status === filter;
+    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+  filtered.forEach(c => {
+    const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const color = agentColors[agentNames.indexOf(c.agent)] || '#6750A4';
+    body.innerHTML += `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span class="av" style="background:${color};width:28px;height:28px;font-size:11px">${initials}</span>
+          <span style="font-weight:600">${c.name}</span>
+        </div></td>
+        <td>${c.country}</td>
+        <td>${statusChip[c.status] || c.status}</td>
+        <td><strong>$${c.amount.toLocaleString()}</strong></td>
+        <td>${c.platform}</td>
+        <td><span class="chip">${c.account}</span></td>
+        <td>${c.trades.toLocaleString()}</td>
+        <td>${c.agent}</td>
+      </tr>`;
+  });
+  if (!filtered.length) body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--md-on-surface-variant);padding:24px">No clients found</td></tr>`;
+}
+
+function setFilter(btn, filter) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildClientTable(filter);
+}
+
+function filterClients() { buildClientTable(clientFilter); }
+
+// =============================================
+// GEO TABLE
+// =============================================
+function buildGeoTable() {
+  const body = document.getElementById('geoBody');
+  if (!body) return;
+  body.innerHTML = '';
+  const rows = [
+    ['Qatar',7,'7%','$8,500','🟢'],['Australia',7,'7%','$7,200','🟢'],['Germany',7,'7%','$6,800','🟢'],
+    ['Iran',7,'7%','$4,200','🟡'],['Indonesia',7,'7%','$3,900','🟡'],['Jordan',6,'6%','$5,100','🟢'],
+    ['Iraq',6,'6%','$3,600','🟡'],['Pakistan',6,'6%','$2,800','🟡'],['India',5,'5%','$3,200','🟡'],['Turkey',5,'5%','$4,700','🟢'],
+  ];
+  rows.forEach(([c,n,s,avg,dot]) => {
+    body.innerHTML += `
+      <tr>
+        <td><strong>${c}</strong></td>
+        <td>${n}</td>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="progress" style="width:80px"><div class="progress-fill" style="width:${n/7*100}%;background:#6750A4"></div></div>${s}
+        </div></td>
+        <td>${avg}</td>
+        <td>${dot} ${dot === '🟢' ? 'Active' : 'Monitor'}</td>
+      </tr>`;
+  });
+}
+
+// =============================================
+// AGENT TABLE
+// =============================================
+function buildAgentTable() {
+  const body = document.getElementById('agentBody');
+  if (!body) return;
+  body.innerHTML = '';
+  const resolved = [12,9,10,8,9,7,6,6];
+  const max = Math.max(...agentTickets);
+  agentNames.forEach((name,i) => {
+    const stars = Math.round(3 + (agentTickets[i]/max)*2);
+    body.innerHTML += `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span class="av" style="background:${agentColors[i]}">${name.split(' ').map(w=>w[0]).join('')}</span>
+          <strong>${name}</strong>
+        </div></td>
+        <td>${agentTickets[i]}</td>
+        <td>${resolved[i]}</td>
+        <td><span style="color:${agentResp[i]>36?'#ef4444':'#059669'};font-weight:600">${agentResp[i]}h</span></td>
+        <td><div class="progress" style="width:100px"><div class="progress-fill" style="width:${agentTickets[i]/max*100}%;background:${agentColors[i]}"></div></div></td>
+        <td style="color:#f59e0b">${'★'.repeat(stars)}${'☆'.repeat(5-stars)}</td>
+      </tr>`;
+  });
+}
+
+// =============================================
+// TICKET FEED
+// =============================================
+function buildTicketFeed() {
+  const feed = document.getElementById('ticketFeed');
+  if (!feed) return;
+  const tickets = [
+    {id:'#1042',client:'Omar H.',cat:'Withdrawal Issue',status:'Escalated',time:'2h ago',priority:'High'},
+    {id:'#1041',client:'Sara K.',cat:'Trade Dispute',status:'Open',time:'3h ago',priority:'Medium'},
+    {id:'#1040',client:'Ali R.',cat:'Deposit Problem',status:'In Progress',time:'5h ago',priority:'High'},
+    {id:'#1039',client:'Nour S.',cat:'KYC Verification',status:'Pending Client',time:'6h ago',priority:'Low'},
+    {id:'#1038',client:'Fatima K.',cat:'Leverage Request',status:'Open',time:'8h ago',priority:'Medium'},
+    {id:'#1037',client:'David P.',cat:'Password Reset',status:'Resolved',time:'10h ago',priority:'Low'},
+  ];
+  feed.innerHTML = tickets.map(t => {
+    const statusMap = {'Escalated':'red','Open':'blue','In Progress':'orange','Pending Client':'orange','Resolved':'green'};
+    const priorityMap = {'High':'red','Medium':'orange','Low':'gray'};
+    return `
+      <div class="ticket-card">
+        <div class="ticket-top">
+          <span class="ticket-title">${t.id} — ${t.cat}</span>
+          <span class="chip filled ${statusMap[t.status]||'gray'}">${t.status}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--md-on-surface-variant)">Assigned to: <strong>${t.client}</strong></div>
+        <div class="ticket-meta">
+          <span>🕐 ${t.time}</span>
+          <span>Priority: <span class="chip filled ${priorityMap[t.priority]}" style="padding:2px 8px;font-size:10px">${t.priority}</span></span>
+        </div>
+      </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Zip data files
+*.zip
+
+# Backup files
+*.bak
+
+# Screenshot images
+Screenshot*.png
+
+# Mac system files
+.DS_Store
+
+# Excel files (CSV version is enough)
+*.xlsx
+
+# Internal task files
+AI_Homework_Task.md
