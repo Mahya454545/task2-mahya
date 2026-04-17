@@ -15,3 +15,7 @@ Screenshot*.png
 
 # Internal task files
 AI_Homework_Task.md
+
+backend/.env
+backend/node_modules
+backend/node_modules
