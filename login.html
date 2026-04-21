@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ForFX — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple:#6750A4;--purple-light:#f3f0fa;--purple-mid:#ede9f8;--purple-dark:#4f3d8a;
+      --accent:#9c27b0;--success:#2e7d32;--error:#c62828;--text:#1a1a2e;--muted:#6b7280;
+      --border:#e5e0f0;--white:#ffffff;--bg:#f8f6fc;--card:#ffffff;
+      --shadow:0 4px 24px rgba(103,80,164,0.10);--radius:14px;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+    body::before{content:'';position:fixed;top:-120px;left:-120px;width:420px;height:420px;background:radial-gradient(circle,rgba(103,80,164,0.13) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+    body::after{content:'';position:fixed;bottom:-100px;right:-100px;width:380px;height:380px;background:radial-gradient(circle,rgba(156,39,176,0.10) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+    .page{width:100%;max-width:460px;padding:24px 16px;position:relative;z-index:1;animation:fadeUp 0.5s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+    .brand-icon{width:44px;height:44px;background:var(--purple);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;}
+    .brand-text h1{font-size:20px;font-weight:700;color:var(--text);}
+    .brand-text p{font-size:13px;color:var(--muted);}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px 36px 32px;border:1px solid var(--border);}
+    .tabs{display:flex;background:var(--purple-light);border-radius:10px;padding:4px;margin-bottom:28px;gap:4px;}
+    .tab-btn{flex:1;padding:9px;border:none;border-radius:7px;background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+    .tab-btn.active{background:var(--white);color:var(--purple);box-shadow:0 1px 6px rgba(103,80,164,0.13);}
+    .form{display:none;flex-direction:column;gap:18px;}
+    .form.active{display:flex;animation:fadeIn 0.3s ease both;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .form-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.4px;margin-bottom:2px;}
+    .form-sub{font-size:13px;color:var(--muted);margin-bottom:4px;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .field label{font-size:13px;font-weight:500;color:var(--text);}
+    .input-wrap{position:relative;display:flex;align-items:center;}
+    .input-wrap input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--white);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+    .input-wrap input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(103,80,164,0.10);}
+    .input-wrap input.error-input{border-color:var(--error);box-shadow:0 0 0 3px rgba(198,40,40,0.08);}
+    .eye-btn{position:absolute;right:12px;background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;transition:color 0.2s;}
+    .eye-btn:hover{color:var(--purple);}
+    .input-wrap input[type="password"],.input-wrap input[type="text"].has-eye{padding-right:40px;}
+    .field-error{font-size:12px;color:var(--error);display:none;align-items:center;gap:4px;}
+    .field-error.show{display:flex;}
+    .pw-strength{display:none;flex-direction:column;gap:6px;}
+    .pw-strength.show{display:flex;}
+    .pw-bars{display:flex;gap:4px;}
+    .pw-bar{flex:1;height:4px;border-radius:4px;background:var(--border);transition:background 0.3s;}
+    .pw-bar.weak{background:#ef5350;}.pw-bar.medium{background:#ffa726;}.pw-bar.strong{background:#66bb6a;}
+    .pw-label{font-size:12px;color:var(--muted);}
+    .pw-hints{display:flex;flex-direction:column;gap:4px;margin-top:2px;}
+    .hint{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;transition:color 0.2s;}
+    .hint.met{color:var(--success);}
+    .hint svg{width:13px;height:13px;flex-shrink:0;}
+    .row-between{display:flex;align-items:center;justify-content:space-between;}
+    .remember{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);}
+    .remember input[type="checkbox"]{width:16px;height:16px;accent-color:var(--purple);cursor:pointer;}
+    .forgot{font-size:13px;color:var(--purple);text-decoration:none;font-weight:500;}
+    .forgot:hover{text-decoration:underline;}
+    .btn-submit{width:100%;padding:13px;background:var(--purple);color:white;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s,transform 0.1s;margin-top:2px;}
+    .btn-submit:hover{background:var(--purple-dark);}
+    .btn-submit:active{transform:scale(0.99);}
+    .btn-submit:disabled{opacity:0.7;cursor:not-allowed;}
+    .alert{padding:11px 14px;border-radius:9px;font-size:13px;font-weight:500;display:none;align-items:center;gap:8px;}
+    .alert.show{display:flex;}
+    .alert.success{background:#e8f5e9;color:var(--success);border:1px solid #a5d6a7;}
+    .alert.error{background:#ffebee;color:var(--error);border:1px solid #ef9a9a;}
+    .terms{font-size:12px;color:var(--muted);text-align:center;line-height:1.5;}
+    .terms a{color:var(--purple);text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">
+    <div class="brand-icon">F</div>
+    <div class="brand-text"><h1>ForFX</h1><p>Sales & Support Portal</p></div>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Sign Up</button>
+    </div>
+    <!-- LOGIN -->
+    <div class="form active" id="form-login">
+      <div><div class="form-title">Welcome back</div><div class="form-sub">Sign in to your ForFX account</div></div>
+      <div class="alert" id="login-alert"></div>
+      <div class="field">
+        <label>Email address</label>
+        <div class="input-wrap"><input type="email" id="login-email" placeholder="you@forfx.com"/></div>
+        <div class="field-error" id="login-email-err"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span>Please enter a valid email (English only)</span></div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="login-password" placeholder="Enter your password" class="has-eye"/>
+          <button class="eye-btn" type="button" onclick="togglePw('login-password',this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <div class="field-error" id="login-pw-err"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span>Password is required</span></div>
+      </div>
+      <div class="row-between">
+        <label class="remember"><input type="checkbox" id="remember-me"/> Remember me</label>
+        <a href="forgot-password.html" class="forgot">Forgot password?</a>
+      </div>
+      <button class="btn-submit" onclick="handleLogin()">Sign In</button>
+      <div class="terms">Don't have an account? <a href="#" onclick="switchTab('register')">Create one</a></div>
+    </div>
+    <!-- REGISTER -->
+    <div class="form" id="form-register">
+      <div><div class="form-title">Create account</div><div class="form-sub">Join ForFX — fill in your details below</div></div>
+      <div class="alert" id="register-alert"></div>
+      <div class="field">
+        <label>Full name</label>
+        <div class="input-wrap"><input type="text" id="reg-name" placeholder="Sara Ahmadi"/></div>
+        <div class="field-error" id="reg-name-err"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span id="reg-name-err-msg">Please use English characters only</span></div>
+      </div>
+      <div class="field">
+        <label>Email address</label>
+        <div class="input-wrap"><input type="email" id="reg-email" placeholder="you@forfx.com"/></div>
+        <div class="field-error" id="reg-email-err"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span>Please enter a valid email (English only)</span></div>
+      </div>
+      <div class="field">
+        <label>Role</label>
+        <div class="input-wrap"><input type="text" id="reg-role" placeholder="e.g. Account Manager"/></div>
+        <div class="field-error" id="reg-role-err"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span>Please use English characters only</span></div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="reg-password" placeholder="Create a strong password" class="has-eye" oninput="checkStrength(this.value)"/>
+          <button class="eye-btn" type="button" onclick="togglePw('reg-password',this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <div class="pw-strength" id="pw-strength">
+          <div class="pw-bars"><div class="pw-bar" id="bar1"></div><div class="pw-bar" id="bar2"></div><div class="pw-bar" id="bar3"></div></div>
+          <div class="pw-label" id="pw-label">Weak</div>
+        </div>
+        <div class="pw-hints">
+          <div class="hint" id="hint-len"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>At least 8 characters</div>
+          <div class="hint" id="hint-upper"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>One uppercase letter (A-Z)</div>
+          <div class="hint" id="hint-num"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>One number (0-9)</div>
+          <div class="hint" id="hint-special"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>One special character (!@#$...)</div>
+        </div>
+        <div class="field-error" id="reg-pw-err"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span id="reg-pw-err-msg">Password must meet all requirements</span></div>
+      </div>
+      <button class="btn-submit" onclick="handleRegister()">Create Account</button>
+      <div class="terms">By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></div>
+    </div>
+  </div>
+</div>
+<script>
+  const API='http://localhost:3000/api';
+  function switchTab(tab){
+    document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(tab==='login'&&i===0)||(tab==='register'&&i===1)));
+    document.getElementById('form-login').classList.toggle('active',tab==='login');
+    document.getElementById('form-register').classList.toggle('active',tab==='register');
+  }
+  function togglePw(id,btn){
+    const input=document.getElementById(id);
+    const isText=input.type==='text';
+    input.type=isText?'password':'text';
+    btn.innerHTML=isText?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  }
+  function isEnglishOnly(str){return /^[\x00-\x7F]*$/.test(str);}
+  function isValidEmail(email){return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email);}
+  function checkStrength(pw){
+    const s=document.getElementById('pw-strength');
+    s.classList.toggle('show',pw.length>0);
+    const hasLen=pw.length>=8,hasUpper=/[A-Z]/.test(pw),hasNum=/[0-9]/.test(pw),hasSpecial=/[^A-Za-z0-9]/.test(pw);
+    document.getElementById('hint-len').classList.toggle('met',hasLen);
+    document.getElementById('hint-upper').classList.toggle('met',hasUpper);
+    document.getElementById('hint-num').classList.toggle('met',hasNum);
+    document.getElementById('hint-special').classList.toggle('met',hasSpecial);
+    const score=[hasLen,hasUpper,hasNum,hasSpecial].filter(Boolean).length;
+    const cls=['weak','medium','strong'];
+    ['bar1','bar2','bar3'].forEach((b,i)=>{document.getElementById(b).className='pw-bar'+(i<Math.ceil(score*3/4)?' '+cls[Math.min(Math.floor(score/1.5),2)]:''};});
+    document.getElementById('pw-label').textContent=score<=1?'Weak':score<=3?'Medium':'Strong';
+  }
+  function showErr(id,show){document.getElementById(id).classList.toggle('show',show);}
+  function showAlert(id,type,msg){
+    const el=document.getElementById(id);
+    el.className='alert '+type+' show';
+    el.innerHTML=(type==='success'?'<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>':'<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>')+msg;
+  }
+  window.addEventListener('load',()=>{
+    const saved=localStorage.getItem('forfx_email');
+    if(saved){document.getElementById('login-email').value=saved;document.getElementById('remember-me').checked=true;}
+  });
+  async function handleLogin(){
+    const email=document.getElementById('login-email').value.trim();
+    const password=document.getElementById('login-password').value;
+    let valid=true;
+    showErr('login-email-err',false);showErr('login-pw-err',false);
+    document.getElementById('login-alert').className='alert';
+    if(!email||!isEnglishOnly(email)||!isValidEmail(email)){showErr('login-email-err',true);document.getElementById('login-email').classList.add('error-input');valid=false;}
+    else{document.getElementById('login-email').classList.remove('error-input');}
+    if(!password){showErr('login-pw-err',true);document.getElementById('login-password').classList.add('error-input');valid=false;}
+    else{document.getElementById('login-password').classList.remove('error-input');}
+    if(!valid)return;
+    const btn=document.querySelector('#form-login .btn-submit');
+    btn.disabled=true;btn.textContent='Signing in...';
+    try{
+      const res=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+      const data=await res.json();
+      if(data.success){
+        if(document.getElementById('remember-me').checked)localStorage.setItem('forfx_email',email);
+        else localStorage.removeItem('forfx_email');
+        localStorage.setItem('forfx_user',JSON.stringify(data.data));
+        showAlert('login-alert','success',`Welcome back, ${data.data.name}! Redirecting...`);
+        setTimeout(()=>{window.location.href='dashboard.html';},1200);
+      }else{showAlert('login-alert','error',data.message||'Login failed');}
+    }catch(e){showAlert('login-alert','error','Cannot connect to server. Make sure the backend is running.');}
+    finally{btn.disabled=false;btn.textContent='Sign In';}
+  }
+  async function handleRegister(){
+    const name=document.getElementById('reg-name').value.trim();
+    const email=document.getElementById('reg-email').value.trim();
+    const role=document.getElementById('reg-role').value.trim();
+    const password=document.getElementById('reg-password').value;
+    let valid=true;
+    ['reg-name-err','reg-email-err','reg-role-err','reg-pw-err'].forEach(id=>showErr(id,false));
+    document.getElementById('register-alert').className='alert';
+    if(!name||!isEnglishOnly(name)){document.getElementById('reg-name-err-msg').textContent=!name?'Full name is required':'Please use English characters only';showErr('reg-name-err',true);valid=false;}
+    if(!email||!isEnglishOnly(email)||!isValidEmail(email)){showErr('reg-email-err',true);valid=false;}
+    if(!role||!isEnglishOnly(role)){showErr('reg-role-err',true);valid=false;}
+    const hasLen=password.length>=8,hasUpper=/[A-Z]/.test(password),hasNum=/[0-9]/.test(password),hasSpecial=/[^A-Za-z0-9]/.test(password);
+    if(!hasLen||!hasUpper||!hasNum||!hasSpecial){document.getElementById('reg-pw-err-msg').textContent='Password must meet all requirements above';showErr('reg-pw-err',true);valid=false;}
+    if(!valid)return;
+    const btn=document.querySelector('#form-register .btn-submit');
+    btn.disabled=true;btn.textContent='Creating account...';
+    try{
+      const res=await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password,role})});
+      const data=await res.json();
+      if(data.success){showAlert('register-alert','success','Account created! You can now sign in.');setTimeout(()=>switchTab('login'),1500);}
+      else{showAlert('register-alert','error',data.message||'Registration failed');}
+    }catch(e){showAlert('register-alert','error','Cannot connect to server. Make sure the backend is running.');}
+    finally{btn.disabled=false;btn.textContent='Create Account';}
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter')return;
+    if(document.getElementById('form-login').classList.contains('active'))handleLogin();
+    else handleRegister();
+  });
+</script>
+</body>
+</html>
+
+

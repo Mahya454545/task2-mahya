@@ -46,5 +46,42 @@ const login = async (req, res) => {
     res.status(500).json({ success: false, message: 'Database error, please try again' })
   }
 }
+const checkEmail = async (req, res) => {
+  const { email } = req.body
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required' })
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No account found with this email' })
+    }
+    res.json({ success: true, message: 'Email found' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ success: false, message: 'Database error, please try again' })
+  }
+}
 
-module.exports = { register, login }
+const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body
+  if (!email || !newPassword) {
+    return res.status(400).json({ success: false, message: 'All fields are required' })
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No account found with this email' })
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword }
+    })
+    res.json({ success: true, message: 'Password updated successfully' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ success: false, message: 'Database error, please try again' })
+  }
+}
+module.exports = { register, login, checkEmail, resetPassword }
